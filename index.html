@@ -496,7 +496,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc,
-         query, orderBy, enableIndexedDbPersistence }
+         query, orderBy }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/+esm';
 
@@ -514,8 +514,7 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Habilita persistência offline
-enableIndexedDbPersistence(db).catch(() => {});
+
 
 /* ══════════════════ TREINOS ══════════════════ */
 const TREINOS={
@@ -565,6 +564,7 @@ onAuthStateChanged(auth, async user => {
     currentUser = user;
     document.getElementById('loginScreen').classList.remove('show');
     document.getElementById('mainApp').style.display = 'flex';
+    await new Promise(r=>requestAnimationFrame(r));
     // Avatar
     if(user.photoURL){
       const av = document.getElementById('userAvatar');
@@ -628,7 +628,9 @@ window.goPage = (id,btn) => {
 
 /* ══════════════════ TREINO GRID ══════════════════ */
 function buildGrid(){
-  const g=document.getElementById('tgrid'); g.innerHTML='';
+  const g=document.getElementById('tgrid');
+  if(!g){ console.error('tgrid not found'); return; }
+  g.innerHTML='';
   Object.keys(TREINOS).forEach(k=>{
     const d=document.createElement('div'); d.className='tbtn';
     d.innerHTML=`<div class="t-ic">${ICONS[k]||'🏋️'}</div><div class="t-nm">${k}</div><div class="t-ex">${TREINOS[k].length} exercícios</div>`;
