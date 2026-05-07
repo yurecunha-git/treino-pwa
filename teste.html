@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Teste</title>
+<style>
+body{background:#0d0d0d;color:#fff;font-family:sans-serif;padding:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.btn{background:#181818;border:1.5px solid #262626;border-radius:14px;padding:16px;text-align:center;cursor:pointer}
+#log{background:#111;padding:12px;border-radius:8px;font-size:12px;margin-top:16px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<h2>Teste de Renderização</h2>
+<div id="status">Carregando Firebase...</div>
+<div class="grid" id="tgrid"></div>
+<select id="esel" style="width:100%;background:#181818;color:#fff;padding:12px;border-radius:8px;margin-top:8px">
+  <option value="">— escolha —</option>
+</select>
+<div id="log">Log:\n</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const log = msg => { document.getElementById('log').textContent += msg + '\n'; };
+
+const TREINOS = {
+  PUSH: ['Supino inclinado halter','Supino reto','Desenvolvimento ombro'],
+  PULL: ['Puxada neutra','Remada máquina','Rosca direta'],
+  LEGS: ['Leg press','Cadeira extensora','Mesa flexora']
+};
+
+log('Script iniciado');
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDI_vZOVi2cXtli9W_rZ1OyTMDn9--hdVw",
+  authDomain: "projeto-forja-2ec24.firebaseapp.com",
+  projectId: "projeto-forja-2ec24",
+  storageBucket: "projeto-forja-2ec24.firebasestorage.app",
+  messagingSenderId: "725113405383",
+  appId: "1:725113405383:web:247b881c75faee65efa3e2"
+};
+
+log('Inicializando Firebase...');
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+log('Firebase OK');
+
+onAuthStateChanged(auth, user => {
+  if(user){
+    log('Usuário logado: ' + user.email);
+    document.getElementById('status').textContent = '✅ Logado: ' + user.email;
+    buildGrid();
+    fillEsel();
+  } else {
+    log('Não logado - fazendo login...');
+    document.getElementById('status').textContent = '🔑 Não logado';
+    const btn = document.createElement('button');
+    btn.textContent = 'Entrar com Google';
+    btn.style.cssText = 'padding:14px 24px;border-radius:10px;border:none;background:#fff;cursor:pointer;font-size:15px;margin-top:12px';
+    btn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => log('Erro login: '+e.message));
+    document.getElementById('status').after(btn);
+  }
+});
+
+function buildGrid(){
+  log('buildGrid iniciado');
+  const g = document.getElementById('tgrid');
+  log('tgrid encontrado: ' + !!g);
+  g.innerHTML = '';
+  Object.keys(TREINOS).forEach(k => {
+    const d = document.createElement('div');
+    d.className = 'btn';
+    d.textContent = k + ' (' + TREINOS[k].length + ')';
+    d.onclick = () => log('Clicou: ' + k);
+    g.appendChild(d);
+    log('Adicionou botão: ' + k);
+  });
+  log('buildGrid concluído. Filhos: ' + g.children.length);
+}
+
+function fillEsel(){
+  log('fillEsel iniciado');
+  const s = document.getElementById('esel');
+  Object.entries(TREINOS).forEach(([k, exs]) => {
+    const grp = document.createElement('optgroup');
+    grp.label = k;
+    exs.forEach(ex => {
+      const o = document.createElement('option');
+      o.value = ex; o.textContent = ex;
+      grp.appendChild(o);
+    });
+    s.appendChild(grp);
+  });
+  log('fillEsel concluído. Opções: ' + s.options.length);
+}
+</script>
+</body>
+</html>
