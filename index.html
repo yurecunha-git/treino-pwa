@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0d0d0d"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<title>TreinoTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════ */
+:root {
+  --bg:       #0d0d0d;
+  --surf:     #111;
+  --card:     #181818;
+  --card2:    #202020;
+  --border:   #262626;
+  --green:    #00e676;
+  --gbg:      rgba(0,230,118,.1);
+  --gbr:      rgba(0,230,118,.3);
+  --text:     #efefef;
+  --sub:      #5a5a5a;
+  --sub2:     #333;
+  --pull:     #82b1ff;
+  --legs:     #ffab40;
+  --upper:    #ea80fc;
+  --lower:    #ff5252;
+  --nav:      56px;
+  --safe:     env(safe-area-inset-bottom, 0px);
+  --head:     48px;
+}
+
+/* ══════════════════════════════════════
+   RESET
+══════════════════════════════════════ */
+*,*::before,*::after {
+  box-sizing:border-box; margin:0; padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+html,body { height:100%; overscroll-behavior:none; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+
+/* ══════════════════════════════════════
+   SHELL
+══════════════════════════════════════ */
+.app {
+  display:flex; flex-direction:column;
+  height:100svh;
+  max-width:480px; margin:0 auto;
+}
+
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
+header {
+  height:var(--head);
+  background:var(--surf);
+  border-bottom:1px solid #161616;
+  display:flex; align-items:center;
+  justify-content:space-between;
+  padding:0 16px; flex-shrink:0;
+}
+.logo {
+  font-family:'Rajdhani',sans-serif;
+  font-size:21px; font-weight:700; letter-spacing:1.5px;
+}
+.logo em { color:var(--green); font-style:normal; }
+.date-chip {
+  font-size:11px; color:var(--sub);
+  background:var(--card); border:1px solid var(--border);
+  padding:4px 11px; border-radius:20px; text-transform:capitalize;
+}
+
+/* ══════════════════════════════════════
+   SCROLL AREA
+══════════════════════════════════════ */
+.scroll {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  padding:10px 13px calc(var(--nav) + var(--safe) + 10px);
+}
+
+/* ══════════════════════════════════════
+   PAGES
+══════════════════════════════════════ */
+.page { display:none; animation:fu .2s ease; }
+.page.active { display:block; }
+@keyframes fu {
+  from { opacity:0; transform:translateY(7px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ══════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════ */
+nav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px;
+  height:calc(var(--nav) + var(--safe));
+  padding-bottom:var(--safe);
+  background:var(--surf); border-top:1px solid #161616;
+  display:flex; z-index:200;
+}
+.nb {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px;
+  border:none; background:none; color:var(--sub); cursor:pointer;
+  font-family:'Rajdhani',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.5px; text-transform:uppercase;
+  position:relative; padding:5px 2px;
+  transition:color .15s;
+}
+.nb:active { opacity:.5; }
+.nb.on { color:var(--green); }
+.nb.on::before {
+  content:''; position:absolute; top:0; left:18%; right:18%;
+  height:2px; background:var(--green); border-radius:0 0 3px 3px;
+}
+.nb-ic { font-size:19px; line-height:1; }
+
+/* ══════════════════════════════════════
+   SECTION LABEL
+══════════════════════════════════════ */
+.lbl {
+  font-family:'Rajdhani',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:2.8px; color:var(--sub); text-transform:uppercase;
+  margin:14px 0 8px;
+}
+
+/* ══════════════════════════════════════
+   TREINO GRID — sempre 2×2
+══════════════════════════════════════ */
+.tgrid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:8px; margin-bottom:6px;
+}
+.tbtn {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:14px; padding:16px 10px 14px;
+  cursor:pointer; text-align:center;
+  display:flex; flex-direction:column; align-items:center;
+  transition:border-color .15s, background .15s;
+  position:relative; overflow:hidden;
+}
+.tbtn:active { opacity:.65; }
+.tbtn.on {
+  border-color:var(--green); background:var(--gbg);
+  box-shadow:0 0 0 1px var(--green);
+}
+.t-ic { font-size:26px; margin-bottom:6px; line-height:1; }
+.t-nm {
+  font-family:'Rajdhani',sans-serif; font-size:19px;
+  font-weight:700; line-height:1; color:var(--text);
+}
+.t-ex { font-size:10px; color:var(--sub); margin-top:3px; }
+
+/* ══════════════════════════════════════
+   EXERCISE CARDS
+══════════════════════════════════════ */
+.exlist { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.exc {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; overflow:hidden;
+}
+.exh {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; cursor:pointer; gap:8px; min-height:48px;
+}
+.exn { font-size:13px; font-weight:500; flex:1; line-height:1.3; }
+.exmeta { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.exbadge {
+  font-size:10px; color:var(--sub); background:var(--card2);
+  padding:3px 8px; border-radius:7px;
+}
+.chv { color:var(--sub); font-size:15px; transition:transform .2s; }
+.chv.op { transform:rotate(180deg); }
+.exbd { padding:0 14px 12px; display:none; }
+.exbd.op { display:block; }
+
+/* set rows */
+.srow {
+  display:grid; grid-template-columns:36px 1fr 1fr 22px;
+  align-items:center; gap:6px; margin-top:8px;
+}
+.slb { font-size:11px; color:var(--sub); font-weight:600; }
+.sinp {
+  background:var(--card2); border:1px solid var(--sub2);
+  border-radius:8px; color:var(--text); font-size:16px;
+  padding:9px 8px; outline:none; width:100%;
+  -webkit-appearance:none; transition:border-color .15s;
+  font-family:'DM Sans',sans-serif;
+}
+.sinp:focus { border-color:var(--green); }
+.sinp::placeholder { color:var(--sub2); }
+.sunit { font-size:10px; color:var(--sub); text-align:center; }
+
+/* obs */
+.obs {
+  width:100%; background:var(--card2); border:1px solid var(--border);
+  border-radius:10px; color:var(--text); font-size:16px;
+  padding:11px 13px; resize:none; outline:none;
+  font-family:'DM Sans',sans-serif; line-height:1.45;
+}
+.obs:focus { border-color:var(--green); }
+
+/* buttons */
+.btn {
+  width:100%; padding:15px; border-radius:13px;
+  font-size:15px; font-weight:700; border:none; cursor:pointer;
+  font-family:'Rajdhani',sans-serif; letter-spacing:1px; min-height:50px;
+  transition:opacity .15s, transform .1s;
+}
+.btn:active { transform:scale(.97); opacity:.8; }
+.btn-g { background:var(--green); color:#000; }
+.btn-r {
+  background:transparent; border:1.5px solid var(--lower);
+  color:var(--lower); margin-top:8px;
+}
+hr.dv { border:none; border-top:1px solid #1a1a1a; margin:13px 0; }
+
+/* ══════════════════════════════════════
+   STATS
+══════════════════════════════════════ */
+.s3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.scard {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:13px; padding:13px 8px; text-align:center;
+}
+.snum {
+  font-family:'Rajdhani',sans-serif; font-size:30px;
+  font-weight:700; color:var(--green); line-height:1;
+}
+.slbl { font-size:9px; color:var(--sub); margin-top:3px; line-height:1.3; }
+
+/* ══════════════════════════════════════
+   CALENDAR
+══════════════════════════════════════ */
+.calh { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.caln {
+  background:var(--card); border:1px solid var(--border); border-radius:8px;
+  padding:8px 16px; cursor:pointer; color:var(--text); font-size:17px;
+  min-width:44px; min-height:40px; line-height:1;
+}
+.caln:active { opacity:.5; }
+.calm {
+  font-family:'Rajdhani',sans-serif; font-size:18px;
+  font-weight:700; text-transform:capitalize;
+}
+.calgrid {
+  display:grid; grid-template-columns:repeat(7,1fr);
+  gap:4px; margin-bottom:12px;
+}
+.caldn { text-align:center; font-size:9px; color:var(--sub); font-weight:700; padding:3px 0; }
+.cald {
+  aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; position:relative; gap:1px;
+}
+.cald.tod { border:2px solid var(--green); color:var(--green); font-weight:700; }
+.cald.trn { background:var(--gbg); border:1px solid var(--gbr); }
+.cald .dn { font-size:12px; line-height:1; }
+.cald .dt { font-size:6px; color:var(--green); font-weight:700; line-height:1; }
+.cald .dot {
+  display:none; width:3px; height:3px; border-radius:50%;
+  background:var(--green); position:absolute; bottom:3px;
+}
+.cald.trn .dot { display:block; }
+.leg { display:flex; gap:14px; padding:2px 0 10px; }
+.leg-i { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--sub); }
+.leg-b { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+
+/* ══════════════════════════════════════
+   HISTÓRICO
+══════════════════════════════════════ */
+.hi {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:13px 14px; margin-bottom:7px;
+  display:flex; align-items:flex-start; gap:11px;
+}
+.hstr {
+  width:3px; align-self:stretch; border-radius:3px;
+  flex-shrink:0; background:var(--green); min-height:36px;
+}
+.hstr.pull  { background:var(--pull); }
+.hstr.legs  { background:var(--legs); }
+.hstr.upper { background:var(--upper); }
+.hstr.lower { background:var(--lower); }
+.hin { flex:1; min-width:0; }
+.htr { font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; line-height:1; }
+.hdt { font-size:11px; color:var(--sub); margin-top:2px; }
+.hob { font-size:11px; color:var(--sub); font-style:italic; margin-top:3px; }
+.hdel {
+  background:none; border:none; color:var(--sub2); font-size:18px;
+  cursor:pointer; padding:2px 4px; flex-shrink:0; align-self:flex-start;
+  transition:color .15s;
+}
+.hdel:active { color:var(--lower); }
+
+/* ══════════════════════════════════════
+   EVOLUÇÃO
+══════════════════════════════════════ */
+.esel {
+  width:100%; background:var(--card); border:1.5px solid var(--border);
+  border-radius:10px; color:var(--text); font-size:16px;
+  padding:12px 13px; outline:none; cursor:pointer; margin-bottom:12px;
+  -webkit-appearance:none; font-family:'DM Sans',sans-serif;
+}
+.esel:focus { border-color:var(--green); }
+.cwrap {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:13px; padding:14px 12px; margin-bottom:12px;
+}
+.ctit { font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--sub); margin-bottom:12px; }
+canvas { width:100%!important; }
+.nodt { text-align:center; color:var(--sub); font-size:13px; padding:30px 0; }
+
+/* ══════════════════════════════════════
+   EXPORT / IMPORT
+══════════════════════════════════════ */
+.actions { display:flex; gap:8px; }
+.actions .btn { flex:1; font-size:13px; padding:12px 8px; min-height:44px; }
+.btn-out { background:var(--card); border:1.5px solid var(--border); color:var(--text); }
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+.toast {
+  position:fixed;
+  bottom:calc(var(--nav) + var(--safe) + 12px);
+  left:50%; transform:translateX(-50%) translateY(10px);
+  background:var(--green); color:#000; padding:10px 22px; border-radius:30px;
+  font-weight:700; font-size:13px; font-family:'Rajdhani',sans-serif; letter-spacing:.5px;
+  opacity:0; transition:all .25s; pointer-events:none; z-index:999; white-space:nowrap;
+}
+.toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.err { background:var(--lower); color:#fff; }
+
+/* spinner */
+.sp {
+  display:inline-block; width:15px; height:15px;
+  border:2px solid #2a2a2a; border-top-color:var(--green);
+  border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* install banner */
+.install-banner {
+  display:none; background:var(--gbg); border:1px solid var(--gbr);
+  border-radius:12px; padding:13px 14px; margin-bottom:12px;
+  align-items:center; gap:10px;
+}
+.install-banner.show { display:flex; }
+.install-banner p { flex:1; font-size:13px; line-height:1.4; }
+.install-banner p strong { color:var(--green); }
+.ibtn {
+  background:var(--green); color:#000; border:none;
+  border-radius:8px; padding:9px 14px; font-family:'Rajdhani',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">TREINO<em>TRACK</em></div>
+    <div class="date-chip" id="datePill"></div>
+  </header>
+
+  <!-- SCROLL -->
+  <div class="scroll" id="scrollArea">
+
+    <!-- ══ REGISTRAR ══ -->
+    <div class="page active" id="page-registrar">
+
+      <!-- Install prompt -->
+      <div class="install-banner" id="installBanner">
+        <p>📲 <strong>Instale o app</strong> na tela inicial para usar offline!</p>
+        <button class="ibtn" onclick="installApp()">Instalar</button>
+      </div>
+
+      <div class="lbl">Selecionar treino</div>
+      <div class="tgrid" id="tgrid"></div>
+
+      <div id="exSec" style="display:none">
+        <div class="lbl" id="exLbl">Exercícios</div>
+        <div class="exlist" id="exlist"></div>
+        <div class="lbl">Observação</div>
+        <textarea class="obs" id="obs" rows="2" placeholder="Como foi o treino?"></textarea>
+        <hr class="dv"/>
+        <button class="btn btn-g" onclick="salvar()">✔ Concluir treino</button>
+        <div style="height:6px"></div>
+      </div>
+    </div>
+
+    <!-- ══ CALENDÁRIO ══ -->
+    <div class="page" id="page-calendario">
+      <div class="s3">
+        <div class="scard"><div class="snum" id="stT">–</div><div class="slbl">Total<br>treinos</div></div>
+        <div class="scard"><div class="snum" id="stS">–</div><div class="slbl">Dias<br>seguidos</div></div>
+        <div class="scard"><div class="snum" id="stM">–</div><div class="slbl">Este<br>mês</div></div>
+      </div>
+      <div class="calh">
+        <button class="caln" onclick="chM(-1)">‹</button>
+        <div class="calm" id="calTitle"></div>
+        <button class="caln" onclick="chM(1)">›</button>
+      </div>
+      <div class="calgrid" id="calgrid"></div>
+      <div class="leg">
+        <div class="leg-i"><div class="leg-b" style="background:var(--gbg);border:1px solid var(--gbr)"></div>Treinado</div>
+        <div class="leg-i"><div class="leg-b" style="border:2px solid var(--green)"></div>Hoje</div>
+      </div>
+    </div>
+
+    <!-- ══ HISTÓRICO ══ -->
+    <div class="page" id="page-historico">
+      <div class="lbl">Check-ins registrados</div>
+      <div id="histList"><div class="nodt">Carregando… <span class="sp"></span></div></div>
+
+      <hr class="dv"/>
+      <div class="lbl">Dados</div>
+      <div class="actions">
+        <button class="btn btn-out" onclick="exportData()">⬇ Exportar</button>
+        <label class="btn btn-out" style="display:flex;align-items:center;justify-content:center;cursor:pointer">
+          ⬆ Importar
+          <input type="file" accept=".json" onchange="importData(event)" style="display:none"/>
+        </label>
+      </div>
+      <div style="height:6px"></div>
+    </div>
+
+    <!-- ══ EVOLUÇÃO ══ -->
+    <div class="page" id="page-evolucao">
+      <div class="lbl">Selecionar exercício</div>
+      <select class="esel" id="esel" onchange="loadEvo()">
+        <option value="">— escolha um exercício —</option>
+      </select>
+      <div class="cwrap">
+        <div class="ctit" id="ctit">Carga máxima por sessão (kg)</div>
+        <canvas id="echart" height="180"></canvas>
+        <div class="nodt" id="enodt" style="display:none">Sem dados para este exercício.</div>
+      </div>
+      <div id="etable" style="display:none">
+        <div class="lbl">Detalhes por sessão</div>
+        <div id="etbody"></div>
+      </div>
+    </div>
+
+  </div><!-- /scroll -->
+
+  <!-- BOTTOM NAV -->
+  <nav>
+    <button class="nb on" id="nb-registrar" onclick="goPage('registrar',this)">
+      <span class="nb-ic">📝</span>Registrar
+    </button>
+    <button class="nb" id="nb-calendario" onclick="goPage('calendario',this)">
+      <span class="nb-ic">📅</span>Calendário
+    </button>
+    <button class="nb" id="nb-historico" onclick="goPage('historico',this)">
+      <span class="nb-ic">📋</span>Histórico
+    </button>
+    <button class="nb" id="nb-evolucao" onclick="goPage('evolucao',this)">
+      <span class="nb-ic">📈</span>Evolução
+    </button>
+  </nav>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ════════════════════════════════════════
+   TREINOS DATA
+════════════════════════════════════════ */
+const TREINOS = {
+  PUSH:  ['Supino inclinado halter','Supino reto (máquina/halter)','Desenvolvimento ombro','Elevação lateral','Crucifixo na polia','Tríceps corda','Tríceps testa'],
+  PULL:  ['Puxada neutra fechada','Remada máquina (apoio peito)','Remada unilateral na polia','Pulldown braço estendido','Crucifixo invertido','Rosca direta','Rosca inclinada'],
+  LEGS:  ['Leg press','Hack ou agacho guiado','Cadeira extensora','Mesa flexora','Afundo halter','Panturrilha em pé'],
+  UPPER: ['Supino reto halter','Puxada neutra','Elevação lateral','Remada máquina','Tríceps barra','Rosca polia'],
+  LOWER: ['Hip thrust','Afundo búlgaro','Mesa flexora','Leg press (pé alto)','Panturrilha sentado']
+};
+const SETS  = { PUSH:[4,3,3,3,3,3,3], PULL:[4,4,3,3,3,3,3], LEGS:[4,3,3,3,3,4], UPPER:[3,3,3,3,3,3], LOWER:[4,3,3,3,4] };
+const ICONS = { PUSH:'💪', PULL:'🔙', LEGS:'🦵', UPPER:'⬆️', LOWER:'⬇️' };
+
+/* ════════════════════════════════════════
+   INDEXEDDB
+════════════════════════════════════════ */
+let db;
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('TreinoTrack', 2);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('checkins')) {
+        const s = d.createObjectStore('checkins', { keyPath: 'id', autoIncrement: true });
+        s.createIndex('data', 'data');
+      }
+      if (!d.objectStoreNames.contains('cargas')) {
+        const s = d.createObjectStore('cargas', { keyPath: 'id', autoIncrement: true });
+        s.createIndex('exercicio', 'exercicio');
+        s.createIndex('data', 'data');
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function txGet(store, index, query) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readonly');
+    const st  = tx.objectStore(store);
+    const req = index ? st.index(index).getAll(query) : st.getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function txAdd(store, data) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).add(data);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function txDelete(store, id) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(id);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function txClear(store) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).clear();
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+/* ════════════════════════════════════════
+   APP STATE
+════════════════════════════════════════ */
+let sel = null, cY, cM, chart = null;
+let allCheckins = [];
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', async () => {
+  // Date pill
+  const now = new Date();
+  document.getElementById('datePill').textContent =
+    now.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short' });
+  cY = now.getFullYear(); cM = now.getMonth();
+
+  // DB
+  await openDB();
+  allCheckins = await txGet('checkins');
+  buildGrid();
+  fillEsel();
+  renderStats();
+  renderCal();
+
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+});
+
+/* ════════════════════════════════════════
+   PWA INSTALL
+════════════════════════════════════════ */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  deferredPrompt = null;
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+  });
+}
+
+/* ════════════════════════════════════════
+   NAV
+════════════════════════════════════════ */
+function goPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('page-' + id).classList.add('active');
+  (btn || document.getElementById('nb-' + id)).classList.add('on');
+  document.getElementById('scrollArea').scrollTo({ top:0, behavior:'instant' });
+  if (id === 'calendario') renderCal();
+  if (id === 'historico')  renderHist();
+}
+
+/* ════════════════════════════════════════
+   TREINO GRID
+════════════════════════════════════════ */
+function buildGrid() {
+  const g = document.getElementById('tgrid');
+  g.innerHTML = '';
+  Object.keys(TREINOS).forEach(k => {
+    const d = document.createElement('div');
+    d.className = 'tbtn';
+    d.innerHTML = `<div class="t-ic">${ICONS[k]||'🏋️'}</div>
+      <div class="t-nm">${k}</div>
+      <div class="t-ex">${TREINOS[k].length} exercícios</div>`;
+    d.onclick = () => pickTreino(k, d);
+    g.appendChild(d);
+  });
+}
+
+function pickTreino(k, btn) {
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  sel = k;
+  buildExList(k);
+  const s = document.getElementById('exSec');
+  s.style.display = 'block';
+  document.getElementById('exLbl').textContent = 'Exercícios — ' + k;
+  setTimeout(() => s.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+}
+
+/* ════════════════════════════════════════
+   EXERCISE LIST
+════════════════════════════════════════ */
+function buildExList(k) {
+  const list = document.getElementById('exlist');
+  list.innerHTML = '';
+  const exs = TREINOS[k], sets = SETS[k] || exs.map(() => 3);
+  exs.forEach((ex, i) => {
+    const n = sets[i] || 3;
+    const c = document.createElement('div');
+    c.className = 'exc';
+    let sh = '';
+    for (let s = 1; s <= n; s++) {
+      sh += `<div class="srow">
+        <span class="slb">S${s}</span>
+        <input class="sinp" type="number" inputmode="numeric" placeholder="Reps"
+          min="1" max="99" data-ex="${ex}" data-s="${s}" data-t="r"/>
+        <input class="sinp" type="number" inputmode="decimal" placeholder="0.0"
+          min="0" step="0.5" data-ex="${ex}" data-s="${s}" data-t="c"/>
+        <span class="sunit">kg</span>
+      </div>`;
+    }
+    c.innerHTML = `
+      <div class="exh" onclick="tog(this)">
+        <span class="exn">${ex}</span>
+        <div class="exmeta">
+          <span class="exbadge">${n}×</span>
+          <span class="chv">▾</span>
+        </div>
+      </div>
+      <div class="exbd">${sh}</div>`;
+    list.appendChild(c);
+  });
+}
+
+function tog(h) {
+  const b = h.nextElementSibling, c = h.querySelector('.chv');
+  const o = b.classList.toggle('op');
+  c.classList.toggle('op', o);
+  if (o) setTimeout(() => h.scrollIntoView({ behavior:'smooth', block:'nearest' }), 110);
+}
+
+/* ════════════════════════════════════════
+   SAVE
+════════════════════════════════════════ */
+async function salvar() {
+  if (!sel) { toast('Selecione um treino!', true); return; }
+  const today = td();
+  const obs   = document.getElementById('obs').value;
+
+  // Save check-in
+  const ciId = await txAdd('checkins', { data: today, treino: sel, observacao: obs });
+
+  // Save cargas
+  const ps = [];
+  document.querySelectorAll('[data-t="c"]').forEach(inp => {
+    const ex = inp.dataset.ex, s = inp.dataset.s;
+    const ri = document.querySelector(`[data-ex="${CSS.escape(ex)}"][data-s="${s}"][data-t="r"]`);
+    ps.push(txAdd('cargas', {
+      data: today, treino: sel, exercicio: ex,
+      serie: +s, reps: +(ri?.value) || 0, carga: +(inp.value) || 0
+    }));
+  });
+  await Promise.all(ps);
+
+  // Update local cache
+  allCheckins.push({ id: ciId, data: today, treino: sel, observacao: obs });
+  renderStats();
+  toast('✔ Treino salvo!');
+
+  // Reset UI
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('on'));
+  document.getElementById('exSec').style.display = 'none';
+  document.getElementById('obs').value = '';
+  sel = null;
+  document.getElementById('scrollArea').scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* ════════════════════════════════════════
+   CALENDAR
+════════════════════════════════════════ */
+function renderCal() {
+  const g = document.getElementById('calgrid');
+  const t = document.getElementById('calTitle');
+  const now = new Date(), f = new Date(cY, cM, 1);
+  t.textContent = f.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+  g.innerHTML = '';
+
+  ['D','S','T','Q','Q','S','S'].forEach(n => {
+    const e = document.createElement('div');
+    e.className = 'caldn'; e.textContent = n; g.appendChild(e);
+  });
+
+  for (let i = 0; i < f.getDay(); i++) {
+    const e = document.createElement('div'); e.className = 'cald'; g.appendChild(e);
+  }
+
+  const dim = new Date(cY, cM + 1, 0).getDate();
+  for (let d = 1; d <= dim; d++) {
+    const ds  = `${cY}-${p2(cM+1)}-${p2(d)}`;
+    const isT = d === now.getDate() && cM === now.getMonth() && cY === now.getFullYear();
+    const trn = allCheckins.find(c => c.data === ds);
+    const e   = document.createElement('div'); e.className = 'cald';
+    if (isT) e.classList.add('tod');
+    if (trn) e.classList.add('trn');
+    e.innerHTML = `<span class="dn">${d}</span>
+      ${trn ? `<span class="dt">${trn.treino}</span><span class="dot"></span>` : ''}`;
+    g.appendChild(e);
+  }
+}
+
+function chM(dir) {
+  cM += dir;
+  if (cM < 0)  { cM = 11; cY--; }
+  if (cM > 11) { cM = 0;  cY++; }
+  renderCal();
+}
+
+/* ════════════════════════════════════════
+   STATS
+════════════════════════════════════════ */
+function renderStats() {
+  const now = new Date(), tm = `${now.getFullYear()}-${p2(now.getMonth()+1)}`;
+  const mes = allCheckins.filter(c => c.data?.startsWith(tm)).length;
+  const ts  = new Set(allCheckins.map(c => c.data));
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    if (ts.has(fmt(d))) streak++;
+    else break;
+  }
+  document.getElementById('stT').textContent = allCheckins.length;
+  document.getElementById('stS').textContent = streak;
+  document.getElementById('stM').textContent = mes;
+}
+
+/* ════════════════════════════════════════
+   HISTÓRICO
+════════════════════════════════════════ */
+async function renderHist() {
+  const el = document.getElementById('histList');
+  if (!allCheckins.length) {
+    el.innerHTML = '<div class="nodt">Nenhum treino ainda.</div>';
+    return;
+  }
+  el.innerHTML = [...allCheckins].reverse().map(c => `
+    <div class="hi">
+      <div class="hstr ${(c.treino||'').toLowerCase()}"></div>
+      <div class="hin">
+        <div class="htr">${c.treino}</div>
+        <div class="hdt">${fd(c.data)}</div>
+        ${c.observacao ? `<div class="hob">"${c.observacao}"</div>` : ''}
+      </div>
+      <button class="hdel" onclick="delCheckin(${c.id},this)" title="Apagar">✕</button>
+    </div>`).join('');
+}
+
+async function delCheckin(id, btn) {
+  if (!confirm('Apagar este check-in?')) return;
+  await txDelete('checkins', id);
+  allCheckins = allCheckins.filter(c => c.id !== id);
+  renderStats();
+  renderHist();
+  toast('Check-in apagado');
+}
+
+/* ════════════════════════════════════════
+   EVOLUÇÃO
+════════════════════════════════════════ */
+function fillEsel() {
+  const s = document.getElementById('esel');
+  Object.entries(TREINOS).forEach(([k, exs]) => {
+    const g = document.createElement('optgroup'); g.label = k;
+    exs.forEach(ex => {
+      const o = document.createElement('option');
+      o.value = ex; o.textContent = ex; g.appendChild(o);
+    });
+    s.appendChild(g);
+  });
+}
+
+async function loadEvo() {
+  const ex = document.getElementById('esel').value;
+  if (!ex) return;
+  document.getElementById('ctit').textContent = `${ex} — máx/sessão (kg)`;
+
+  const all = await txGet('cargas', 'exercicio', ex);
+
+  // Max carga per date
+  const byDate = {};
+  all.forEach(r => {
+    if (!byDate[r.data] || r.carga > byDate[r.data].max)
+      byDate[r.data] = { max: r.carga, rows: [] };
+    byDate[r.data].rows.push(r);
+  });
+  const sorted = Object.entries(byDate).sort((a,b) => a[0].localeCompare(b[0]));
+
+  drawChart(sorted.map(([dt, v]) => ({ data: dt, carga: v.max })));
+  drawTable(sorted.map(([dt, v]) => ({ data: dt, rows: v.rows })));
+}
+
+function drawChart(data) {
+  const cv = document.getElementById('echart'), nd = document.getElementById('enodt');
+  if (chart) { chart.destroy(); chart = null; }
+  if (!data.length) { cv.style.display='none'; nd.style.display='block'; return; }
+  cv.style.display='block'; nd.style.display='none';
+  chart = new Chart(cv, {
+    type: 'line',
+    data: {
+      labels: data.map(d => fd(d.data)),
+      datasets: [{
+        label: 'kg', data: data.map(d => d.carga),
+        borderColor: '#00e676', backgroundColor: 'rgba(0,230,118,.08)',
+        pointBackgroundColor: '#00e676', pointRadius: 4, pointHoverRadius: 6,
+        tension: .35, fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color:'#555', font:{ size:9 } }, grid: { color:'#1a1a1a' } },
+        y: { ticks: { color:'#555', font:{ size:9 } }, grid: { color:'#1a1a1a' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function drawTable(data) {
+  if (!data.length) { document.getElementById('etable').style.display='none'; return; }
+  document.getElementById('etable').style.display = 'block';
+  document.getElementById('etbody').innerHTML = data.reverse().map(({ data: dt, rows }) => `
+    <div class="hi" style="flex-direction:column;align-items:flex-start;gap:5px">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--green)">${fd(dt)}</div>
+      ${rows.map(r => `
+        <div style="font-size:12px;color:var(--sub)">
+          S${r.serie}: <span style="color:var(--text);font-weight:500">${r.reps}r × ${r.carga}kg</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ════════════════════════════════════════
+   EXPORT / IMPORT
+════════════════════════════════════════ */
+async function exportData() {
+  const checkins = await txGet('checkins');
+  const cargas   = await txGet('cargas');
+  const blob = new Blob([JSON.stringify({ checkins, cargas }, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `treinotrack-${td()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast('✔ Exportado!');
+}
+
+async function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const text = await file.text();
+    const { checkins, cargas } = JSON.parse(text);
+    await txClear('checkins'); await txClear('cargas');
+    for (const r of checkins) { const { id, ...rest } = r; await txAdd('checkins', rest); }
+    for (const r of cargas)   { const { id, ...rest } = r; await txAdd('cargas',   rest); }
+    allCheckins = await txGet('checkins');
+    renderStats(); renderHist(); renderCal();
+    toast('✔ Importado com sucesso!');
+  } catch {
+    toast('Erro ao importar arquivo', true);
+  }
+  e.target.value = '';
+}
+
+/* ════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════ */
+function td()  { return fmt(new Date()); }
+function fmt(d){ return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`; }
+function p2(n) { return String(n).padStart(2, '0'); }
+function fd(s) { if (!s) return ''; const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; }
+
+let toastTimer;
+function toast(msg, err = false) {
+  const e = document.getElementById('toast');
+  e.textContent = msg;
+  e.className = 'toast on' + (err ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => e.classList.remove('on'), 2800);
+}
+</script>
+</body>
+</html>
