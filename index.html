@@ -517,6 +517,7 @@ const db   = getFirestore(app);
 
 
 /* ══════════════════ TREINOS ══════════════════ */
+window.TREINOS=window.TREINOS||{};
 const TREINOS={
   PUSH:['Supino inclinado halter','Supino reto (máquina/halter)','Desenvolvimento ombro','Elevação lateral','Crucifixo na polia','Tríceps corda','Tríceps testa'],
   PULL:['Puxada neutra fechada','Remada máquina (apoio peito)','Remada unilateral na polia','Pulldown braço estendido','Crucifixo invertido','Rosca direta','Rosca inclinada'],
@@ -528,8 +529,9 @@ const SETS={PUSH:[4,3,3,3,3,3,3],PULL:[4,4,3,3,3,3,3],LEGS:[4,3,3,3,3,4],UPPER:[
 const ICONS={PUSH:'💪',PULL:'🔙',LEGS:'🦵',UPPER:'⬆️',LOWER:'⬇️'};
 
 /* ══════════════════ STATE ══════════════════ */
+const _now = new Date();
 let currentUser=null, allCheckins=[], allCargas=[];
-let sel=null, cY, cM, chartCarga=null, chartVol=null, chartFreq=null, evoTab='carga';
+let sel=null, cY=_now.getFullYear(), cM=_now.getMonth(), chartCarga=null, chartVol=null, chartFreq=null, evoTab='carga';
 let woState={}, timerState={};
 
 /* ══════════════════ HELPERS FIRESTORE ══════════════════ */
@@ -585,7 +587,6 @@ async function initApp(){
     (['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][now.getDay()]+', '+
     String(now.getDate()).padStart(2,'0')+' de '+
     ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][now.getMonth()]);
-  cY=now.getFullYear(); cM=now.getMonth();
   // Online/offline indicator
   window.addEventListener('online',  ()=>setSyncBadge(true));
   window.addEventListener('offline', ()=>setSyncBadge(false));
@@ -626,12 +627,17 @@ window.goPage = (id,btn) => {
 /* ══════════════════ TREINO GRID ══════════════════ */
 function buildGrid(){
   const g=document.getElementById('tgrid');
-  if(!g){ console.error('tgrid not found'); return; }
+  if(!g){ return; }
   g.innerHTML='';
   Object.keys(TREINOS).forEach(k=>{
-    const d=document.createElement('div'); d.className='tbtn';
-    d.innerHTML=`<div class="t-ic">${ICONS[k]||'🏋️'}</div><div class="t-nm">${k}</div><div class="t-ex">${TREINOS[k].length} exercícios</div>`;
-    d.onclick=()=>pickTreino(k,d); g.appendChild(d);
+    const d=document.createElement('div');
+    d.className='tbtn';
+    d.style.cssText='background:#181818;border:1.5px solid #262626;border-radius:14px;padding:16px 10px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;';
+    d.innerHTML='<div style="font-size:26px;margin-bottom:6px;line-height:1">'+( ICONS[k]||'🏋️')+'</div>'
+      +'<div style="font-family:Rajdhani,sans-serif;font-size:19px;font-weight:700;color:#efefef;line-height:1">'+k+'</div>'
+      +'<div style="font-size:10px;color:#5a5a5a;margin-top:3px">'+TREINOS[k].length+' exercícios</div>';
+    d.onclick=()=>pickTreino(k,d);
+    g.appendChild(d);
   });
 }
 function pickTreino(k,btn){
