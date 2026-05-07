@@ -498,6 +498,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc,
          query, orderBy, enableIndexedDbPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/+esm';
 
 /* ══════════════════ FIREBASE CONFIG ══════════════════ */
 const firebaseConfig = {
@@ -584,7 +585,9 @@ onAuthStateChanged(auth, async user => {
 async function initApp(){
   const now = new Date();
   document.getElementById('datePill').textContent =
-    now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
+    (['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][now.getDay()]+', '+
+    String(now.getDate()).padStart(2,'0')+' de '+
+    ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][now.getMonth()]);
   cY=now.getFullYear(); cM=now.getMonth();
   // Online/offline indicator
   window.addEventListener('online',  ()=>setSyncBadge(true));
@@ -787,7 +790,8 @@ window.closeWorkout=()=>{ clearInterval(timerState.interval); document.getElemen
 function renderCal(){
   const g=document.getElementById('calgrid'), t=document.getElementById('calTitle');
   const now=new Date(), f=new Date(cY,cM,1);
-  t.textContent=f.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  t.textContent=`${MESES[cM]} ${cY}`;
   g.innerHTML='';
   ['D','S','T','Q','Q','S','S'].forEach(n=>{const e=document.createElement('div');e.className='caldn';e.textContent=n;g.appendChild(e);});
   for(let i=0;i<f.getDay();i++){const e=document.createElement('div');e.className='cald';g.appendChild(e);}
@@ -981,8 +985,7 @@ function toast(msg,_,type=''){
 }
 window.toast=toast;
 
-// Expõe Chart globalmente (carregado via CDN abaixo)
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
 </body>
 </html>
