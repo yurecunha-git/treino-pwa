@@ -274,12 +274,12 @@ canvas{width:100%!important}
     </div>
   </header>
 
-  <div class="scroll" id="scrollArea">
+  <div class="scroll" id="scrollArea" style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:10px 13px 80px">
 
     <!-- REGISTRAR -->
-    <div class="page active" id="page-registrar">
+    <div class="page active" id="page-registrar" style="display:block">
       <div class="lbl">Selecionar treino</div>
-      <div class="tgrid" id="tgrid"></div>
+      <div id="tgrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px"></div>
       <div id="exSec" style="display:none">
         <div class="lbl" id="exLbl">Exercícios</div>
         <div class="exlist" id="exlist"></div>
