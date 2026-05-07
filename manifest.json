@@ -1,6 +1,6 @@
 {
-  "name": "TreinoTrack",
-  "short_name": "TreinoTrack",
+  "name": "Projeto Forja",
+  "short_name": "ProjetoForja",
   "description": "Acompanhe seus treinos, cargas e evolução",
   "start_url": "./index.html",
   "display": "standalone",

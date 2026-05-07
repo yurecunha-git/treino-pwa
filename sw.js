@@ -1,4 +1,4 @@
-const CACHE = 'treinotrack-v1';
+const CACHE = 'projetoforja-v1';
 const ASSETS = [
   './',
   './index.html',
