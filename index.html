@@ -246,7 +246,7 @@ canvas{width:100%!important}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
+<div class="login-screen show" id="loginScreen">
   <img class="login-logo" src="icons/icon-192.png" alt="Projeto Forja"/>
   <div class="login-title">PROJETO<em>FORJA</em></div>
   <div class="login-sub">Registre seus treinos, acompanhe sua evolução e forje seu físico.</div>
@@ -262,7 +262,7 @@ canvas{width:100%!important}
   <div class="login-note">Seus dados ficam salvos na nuvem e sincronizados em todos os seus dispositivos.</div>
 </div>
 
-<div class="app" id="mainApp" style="display:none">
+<div class="app" id="mainApp">
   <header>
     <div class="logo" style="display:flex;align-items:center;gap:8px">
       <img src="icons/icon-192.png" alt="Projeto Forja" style="width:34px;height:34px;border-radius:8px;object-fit:cover"/>
@@ -563,8 +563,6 @@ onAuthStateChanged(auth, async user => {
   if(user){
     currentUser = user;
     document.getElementById('loginScreen').classList.remove('show');
-    document.getElementById('mainApp').style.display = 'flex';
-    await new Promise(r=>requestAnimationFrame(r));
     // Avatar
     if(user.photoURL){
       const av = document.getElementById('userAvatar');
@@ -577,7 +575,6 @@ onAuthStateChanged(auth, async user => {
   } else {
     currentUser = null;
     document.getElementById('loginScreen').classList.add('show');
-    document.getElementById('mainApp').style.display = 'none';
   }
 });
 
